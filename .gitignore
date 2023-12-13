@@ -1,0 +1,20 @@
+### IDE ###
+# JetBrains
+.idea
+
+# Eclipse
+.project
+.classpath
+
+### Java ###
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# Maven
+target/
+
+### Project ###
+resources/
