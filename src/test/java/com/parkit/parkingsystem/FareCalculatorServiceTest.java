@@ -2,6 +2,7 @@ package com.parkit.parkingsystem;
 
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.constants.ParkingType;
+import com.parkit.parkingsystem.constants.UserRecurrence;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.FareCalculatorService;
@@ -164,4 +165,24 @@ public class FareCalculatorServiceTest {
         assertEquals((24 * Fare.CAR_RATE_PER_HOUR), ticket.getPrice());
     }
 
+    @Test
+    public void calculateFareWithDiscount(){
+        Date inTime = new Date();
+        inTime.setTime(System.currentTimeMillis() - (90 * 60 * 1000));
+        Date outTime = new Date();
+        ParkingSpot parkingSpotBike = new ParkingSpot(1, ParkingType.BIKE,false);
+        ParkingSpot parkingSpotCar = new ParkingSpot(2, ParkingType.CAR,false);
+
+        ticket.setInTime(inTime);
+        ticket.setOutTime(outTime);
+        ticket.setParkingSpot(parkingSpotBike);
+        fareCalculatorService.calculateFare(ticket, true);
+        assertEquals((1.5 * Fare.BIKE_RATE_PER_HOUR) * UserRecurrence.DISCOUNT_RATE, ticket.getPrice());
+
+        ticket.setInTime(inTime);
+        ticket.setOutTime(outTime);
+        ticket.setParkingSpot(parkingSpotCar);
+        fareCalculatorService.calculateFare(ticket, true);
+        assertEquals((1.5 * Fare.CAR_RATE_PER_HOUR) * UserRecurrence.DISCOUNT_RATE, ticket.getPrice());
+    }
 }

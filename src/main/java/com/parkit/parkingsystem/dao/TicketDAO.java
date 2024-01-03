@@ -69,6 +69,27 @@ public class TicketDAO {
         }
     }
 
+    public int getTicketsCount(String vehicleRegNumber) {
+        Connection con = null;
+        int linesCount = 0;
+        try {
+            con = dataBaseConfig.getConnection();
+            PreparedStatement ps = con.prepareStatement(DBConstants.GET_TICKETS_COUNT);
+            ps.setString(1,vehicleRegNumber);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                linesCount = rs.getInt("linesCount");
+            }
+            dataBaseConfig.closeResultSet(rs);
+            dataBaseConfig.closePreparedStatement(ps);
+        }catch (Exception ex){
+            logger.error("Error checking user recurrence",ex);
+        }finally {
+            dataBaseConfig.closeConnection(con);
+            return linesCount;
+        }
+    }
+
     public boolean updateTicket(Ticket ticket) {
         Connection con = null;
         try {

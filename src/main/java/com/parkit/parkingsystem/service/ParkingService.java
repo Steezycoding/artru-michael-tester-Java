@@ -1,6 +1,7 @@
 package com.parkit.parkingsystem.service;
 
 import com.parkit.parkingsystem.constants.ParkingType;
+import com.parkit.parkingsystem.constants.UserRecurrence;
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;
 import com.parkit.parkingsystem.dao.TicketDAO;
 import com.parkit.parkingsystem.model.ParkingSpot;
@@ -34,6 +35,10 @@ public class ParkingService {
                 String vehicleRegNumber = getVehichleRegNumber();
                 parkingSpot.setAvailable(false);
                 parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
+
+                if (ticketDAO.getTicketsCount(vehicleRegNumber) >= UserRecurrence.MIN_TICKET_COUNT) {
+                    System.out.println("Happy to see you again! As a recurring user, you will get a 5% discount.");
+                }
 
                 Date inTime = new Date();
                 Ticket ticket = new Ticket();
@@ -103,7 +108,8 @@ public class ParkingService {
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();
             ticket.setOutTime(outTime);
-            fareCalculatorService.calculateFare(ticket);
+            boolean isRecurrent = ticketDAO.getTicketsCount(vehicleRegNumber) >= UserRecurrence.MIN_TICKET_COUNT;
+            fareCalculatorService.calculateFare(ticket, isRecurrent);
             if(ticketDAO.updateTicket(ticket)) {
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
                 parkingSpot.setAvailable(true);
