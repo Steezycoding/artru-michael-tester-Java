@@ -14,8 +14,8 @@ public class FareCalculatorService {
     }
 
     public void calculateFare(Ticket ticket, boolean isRecurrent) {
-        if ((ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime()))){
-            throw new IllegalArgumentException("Out time provided is incorrect:"+ticket.getOutTime().toString());
+        if ((ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime()))) {
+            throw new IllegalArgumentException("Out time provided is incorrect:" + ticket.getOutTime().toString());
         }
 
         Date inHour = ticket.getInTime();
@@ -39,7 +39,8 @@ public class FareCalculatorService {
                 price = time * Fare.BIKE_RATE_PER_HOUR;
                 break;
             }
-            default: throw new IllegalArgumentException("Unknown Parking Type");
+            default:
+                throw new IllegalArgumentException("Unknown Parking Type");
         }
 
         double finalPrice = isRecurrent ? price * UserRecurrence.DISCOUNT_RATE : price;
