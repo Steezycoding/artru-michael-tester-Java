@@ -4,7 +4,6 @@ import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.model.Ticket;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 public class FareCalculatorService {
@@ -19,14 +18,10 @@ public class FareCalculatorService {
         Duration duration = Duration.between(inHour.toInstant(), outHour.toInstant());
         double time;
 
-        if (duration.toMinutes() < 60) {
-            if (duration.toMinutes() <= 30) {
-                time = 0;
-            } else {
-                time = (double) duration.toMinutes() / 60;
-            }
+        if (duration.toMinutes() <= 30) {
+            time = 0;
         } else {
-            time = duration.toHours();
+            time = (double) duration.toMinutes() / 60;
         }
 
         switch (ticket.getParkingSpot().getParkingType()) {
