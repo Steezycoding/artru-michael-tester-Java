@@ -53,9 +53,27 @@ public class ParkingServiceTest {
     }
 
     @Test
+    public void processIncomingVehicleTest(){
+        when(inputReaderUtil.readSelection()).thenReturn(1);
+        when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(2);
+
+        parkingService.processIncomingVehicle();
+
+        verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
+    }
+
+    @Test
     public void processExitingVehicleTest(){
-        parkingService.processExitingVehicle();
-        verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
+        try {
+            when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+
+            parkingService.processExitingVehicle();
+
+            verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw  new RuntimeException("Failed to exiting vehicule");
+        }
     }
 
 }
