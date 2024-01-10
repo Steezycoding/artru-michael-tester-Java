@@ -67,7 +67,7 @@ public class ParkingServiceTest {
         @BeforeEach
         public void setUp() {
             try {
-                when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+                lenient().when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
             } catch (Exception e) {
                 e.printStackTrace();
                 throw  new RuntimeException("Failed to set up INCOMING vehicle test mock objects");
@@ -116,6 +116,36 @@ public class ParkingServiceTest {
 
             verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
             assertTrue(outputStreamCaptor.toString().trim().contains("Happy to see you again! As a recurring user, you will get a 5% discount."));
+        }
+
+        @Test
+        public void getNextParkingNumberParkingNumberIfAvailable() {
+            when(inputReaderUtil.readSelection()).thenReturn(1);
+            when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);
+
+            ParkingSpot parkingSpot = parkingService.getNextParkingNumberIfAvailable();
+
+            assertNotNull(parkingSpot);
+            assertEquals(1, parkingSpot.getId());
+            assertTrue(parkingSpot.isAvailable());
+            verify(parkingSpotDAO, times(1)).getNextAvailableSlot(any(ParkingType.class));
+        }
+
+        @Test
+        public void getNextParkingNumberParkingNumberNotFoundTest() {
+            when(inputReaderUtil.readSelection()).thenReturn(1);
+            when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(0);
+
+            assertNull(parkingService.getNextParkingNumberIfAvailable());
+            verify(parkingSpotDAO, times(1)).getNextAvailableSlot(any(ParkingType.class));
+        }
+
+        @Test
+        public void getNextParkingNumberParkingNumberWrongArgumentTest() {
+            when(inputReaderUtil.readSelection()).thenReturn(ParkingType.values().length + 1);
+
+            assertNull(parkingService.getNextParkingNumberIfAvailable());
+            verifyNoInteractions(parkingSpotDAO);
         }
     }
 
