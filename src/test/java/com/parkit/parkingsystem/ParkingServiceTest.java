@@ -24,8 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Date;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -188,7 +187,7 @@ public class ParkingServiceTest {
 
                 verify(ticketDAO).updateTicket(ticketCaptor.capture());
                 Ticket ticket = ticketCaptor.getValue();
-                assertThat(ticket.getPrice(), is(Fare.CAR_RATE_PER_HOUR));
+                assertThat(ticket.getPrice()).isEqualTo(Fare.CAR_RATE_PER_HOUR);
                 verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -206,7 +205,7 @@ public class ParkingServiceTest {
 
                 verify(ticketDAO).updateTicket(ticketCaptor.capture());
                 Ticket ticket = ticketCaptor.getValue();
-                assertThat(ticket.getPrice(), is(Fare.CAR_RATE_PER_HOUR * UserRecurrence.DISCOUNT_RATE));
+                assertThat(ticket.getPrice()).isEqualTo(Fare.CAR_RATE_PER_HOUR * UserRecurrence.DISCOUNT_RATE);
                 verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
             } catch (Exception e) {
                 e.printStackTrace();
