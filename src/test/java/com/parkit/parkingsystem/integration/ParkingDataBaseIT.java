@@ -28,6 +28,8 @@ public class ParkingDataBaseIT {
     private static ParkingSpotDAO parkingSpotDAO;
     private static TicketDAO ticketDAO;
     private static DataBasePrepareService dataBasePrepareService;
+    private static Date actualDateMinusOneHour;
+
 
     @Mock
     private static InputReaderUtil inputReaderUtil;
@@ -44,6 +46,11 @@ public class ParkingDataBaseIT {
     @BeforeEach
     private void setUpPerTest() throws Exception {
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.HOUR_OF_DAY, -1);
+        actualDateMinusOneHour = calendar.getTime();
     }
 
     @AfterEach
@@ -56,7 +63,6 @@ public class ParkingDataBaseIT {
         when(inputReaderUtil.readSelection()).thenReturn(1);
 
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-
         parkingService.processIncomingVehicle();
 
         Ticket ticket = ticketDAO.getTicket("ABCDEF");
@@ -72,13 +78,9 @@ public class ParkingDataBaseIT {
 
     @Test
     public void testParkingLotExit() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(Calendar.HOUR_OF_DAY, -1);
-
         Ticket ticket = new Ticket();
         ticket.setVehicleRegNumber("ABCDEF");
-        ticket.setInTime(calendar.getTime());
+        ticket.setInTime(actualDateMinusOneHour);
         ticket.setParkingSpot(new ParkingSpot(1, ParkingType.CAR, false));
 
         ticketDAO.saveTicket(ticket);
@@ -90,5 +92,28 @@ public class ParkingDataBaseIT {
 
         assertThat(updatedTicket.getPrice()).isEqualTo(Fare.CAR_RATE_PER_HOUR);
         assertThat(updatedTicket.getOutTime()).isCloseTo(new Date(), 1000);
+        assertThat(ticket.getParkingSpot().isAvailable()).isTrue();
+    }
+
+    @Test
+    public void testParkingLotExitRecurringUser() {
+        Ticket ticketOne = new Ticket();
+        ticketOne.setVehicleRegNumber("ABCDEF");
+        ticketOne.setParkingSpot(new ParkingSpot(1, ParkingType.CAR, true));
+        ticketOne.setInTime(actualDateMinusOneHour);
+        ticketOne.setOutTime(new Date());
+        ticketOne.setPrice(Fare.CAR_RATE_PER_HOUR);
+        ticketDAO.saveTicket(ticketOne);
+
+        Ticket ticketTwo = new Ticket();
+        ticketTwo.setVehicleRegNumber("ABCDEF");
+        ticketTwo.setParkingSpot(new ParkingSpot(1, ParkingType.CAR, false));
+        ticketTwo.setInTime(actualDateMinusOneHour);
+        ticketDAO.saveTicket(ticketTwo);
+
+        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+
+        parkingService.processExitingVehicle();
+        Ticket lastTicket = ticketDAO.getTicket("ABCDEF");
     }
 }
