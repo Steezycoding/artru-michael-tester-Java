@@ -28,7 +28,7 @@ public class ParkingService {
         this.ticketDAO = ticketDAO;
     }
 
-    public void processIncomingVehicle() {
+    public void processIncomingVehicle(Date inTime) {
         try{
             ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();
             if(parkingSpot !=null && parkingSpot.getId() > 0){
@@ -40,7 +40,6 @@ public class ParkingService {
                     System.out.println("Happy to see you again! As a recurring user, you will get a 5% discount.");
                 }
 
-                Date inTime = new Date();
                 Ticket ticket = new Ticket();
                 ticket.setParkingSpot(parkingSpot);
                 ticket.setVehicleRegNumber(vehicleRegNumber);
@@ -100,11 +99,10 @@ public class ParkingService {
         }
     }
 
-    public void processExitingVehicle() {
+    public void processExitingVehicle(Date outTime) {
         try{
             String vehicleRegNumber = getVehichleRegNumber();
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
-            Date outTime = new Date();
             ticket.setOutTime(outTime);
             boolean isRecurrent = ticketDAO.getTicketsCount(vehicleRegNumber) >= UserRecurrence.MIN_TICKET_COUNT;
             fareCalculatorService.calculateFare(ticket, isRecurrent);

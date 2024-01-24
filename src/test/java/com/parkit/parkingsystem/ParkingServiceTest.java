@@ -78,7 +78,7 @@ public class ParkingServiceTest {
             when(inputReaderUtil.readSelection()).thenReturn(1);
             when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(2);
 
-            parkingService.processIncomingVehicle();
+            parkingService.processIncomingVehicle(new Date());
 
             verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
         }
@@ -88,7 +88,7 @@ public class ParkingServiceTest {
             when(inputReaderUtil.readSelection()).thenReturn(2);
             when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(4);
 
-            parkingService.processIncomingVehicle();
+            parkingService.processIncomingVehicle(new Date());
 
             verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
         }
@@ -99,7 +99,7 @@ public class ParkingServiceTest {
             when(ticketDAO.getTicketsCount(anyString())).thenReturn(UserRecurrence.MIN_TICKET_COUNT - 1);
             when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(2);
 
-            parkingService.processIncomingVehicle();
+            parkingService.processIncomingVehicle(new Date());
 
             verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
             assertFalse(outputStreamCaptor.toString().trim().contains("Happy to see you again! As a recurring user, you will get a 5% discount."));
@@ -111,7 +111,7 @@ public class ParkingServiceTest {
             when(ticketDAO.getTicketsCount(anyString())).thenReturn(UserRecurrence.MIN_TICKET_COUNT);
             when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(2);
 
-            parkingService.processIncomingVehicle();
+            parkingService.processIncomingVehicle(new Date());
 
             verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
             assertTrue(outputStreamCaptor.toString().trim().contains("Happy to see you again! As a recurring user, you will get a 5% discount."));
@@ -171,7 +171,7 @@ public class ParkingServiceTest {
         public void processExitingVehicleUnableUpdateTicketTest() {
             when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(false);
 
-            parkingService.processExitingVehicle();
+            parkingService.processExitingVehicle(new Date());
 
             assertTrue(outputStreamCaptor.toString().trim().contains("Unable to update ticket information. Error occurred"));
             verifyNoInteractions(parkingSpotDAO);
@@ -183,7 +183,7 @@ public class ParkingServiceTest {
                 when(ticketDAO.getTicketsCount(anyString())).thenReturn(UserRecurrence.MIN_TICKET_COUNT - 1);
                 when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(true);
 
-                parkingService.processExitingVehicle();
+                parkingService.processExitingVehicle(new Date());
 
                 verify(ticketDAO).updateTicket(ticketCaptor.capture());
                 Ticket ticket = ticketCaptor.getValue();
@@ -201,7 +201,7 @@ public class ParkingServiceTest {
                 when(ticketDAO.getTicketsCount(anyString())).thenReturn(UserRecurrence.MIN_TICKET_COUNT);
                 when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(true);
 
-                parkingService.processExitingVehicle();
+                parkingService.processExitingVehicle(new Date());
 
                 verify(ticketDAO).updateTicket(ticketCaptor.capture());
                 Ticket ticket = ticketCaptor.getValue();
