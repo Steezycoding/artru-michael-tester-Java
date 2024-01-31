@@ -37,7 +37,7 @@ public class ParkingDataBaseIT {
     private static InputReaderUtil inputReaderUtil;
 
     @BeforeAll
-    private static void setUp() {
+    public static void setUp() {
         parkingSpotDAO = new ParkingSpotDAO();
         parkingSpotDAO.dataBaseConfig = dataBaseTestConfig;
         ticketDAO = new TicketDAO();
@@ -46,14 +46,14 @@ public class ParkingDataBaseIT {
     }
 
     @BeforeEach
-    private void setUpPerTest() throws Exception {
+    public void setUpPerTest() throws Exception {
         // Date : 2024-01-10 13:00:00.000
         actualDate = new Date(1704888000000L);
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
     }
 
     @AfterEach
-    private void tearDown() {
+    public void tearDown() {
         dataBasePrepareService.clearDataBaseEntries();
     }
 
