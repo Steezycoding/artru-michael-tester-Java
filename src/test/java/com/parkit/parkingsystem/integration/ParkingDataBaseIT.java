@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,113 +25,101 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ParkingDataBaseIT {
 
-    private static DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
-    private static ParkingSpotDAO parkingSpotDAO;
-    private static TicketDAO ticketDAO;
-    private static DataBasePrepareService dataBasePrepareService;
+	private static DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
+	private static ParkingSpotDAO parkingSpotDAO;
+	private static TicketDAO ticketDAO;
+	private static DataBasePrepareService dataBasePrepareService;
 
-    private static Date actualDate;
+	private static Date actualDate;
 
-    @Mock
-    private static InputReaderUtil inputReaderUtil;
+	@Mock
+	private static InputReaderUtil inputReaderUtil;
 
-    @BeforeAll
-    public static void setUp() {
-        parkingSpotDAO = new ParkingSpotDAO();
-        parkingSpotDAO.dataBaseConfig = dataBaseTestConfig;
-        ticketDAO = new TicketDAO();
-        ticketDAO.dataBaseConfig = dataBaseTestConfig;
-        dataBasePrepareService = new DataBasePrepareService();
-    }
+	@BeforeAll
+	public static void setUp() {
+		parkingSpotDAO = new ParkingSpotDAO();
+		parkingSpotDAO.dataBaseConfig = dataBaseTestConfig;
+		ticketDAO = new TicketDAO();
+		ticketDAO.dataBaseConfig = dataBaseTestConfig;
+		dataBasePrepareService = new DataBasePrepareService();
+	}
 
-    @BeforeEach
-    public void setUpPerTest() throws Exception {
-        // Date : 2024-01-10 13:00:00.000
-        actualDate = new Date(1704888000000L);
-        when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
-    }
+	@BeforeEach
+	public void setUpPerTest() throws Exception {
+		// Date : 2024-01-10 13:00:00.000
+		actualDate = new Date(1704888000000L);
+		when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+	}
 
-    @AfterEach
-    public void tearDown() {
-        dataBasePrepareService.clearDataBaseEntries();
-    }
+	@AfterEach
+	public void tearDown() {
+		dataBasePrepareService.clearDataBaseEntries();
+	}
 
-    @Test
-    public void testParkingACar() {
-        when(inputReaderUtil.readSelection()).thenReturn(1);
+	@Test
+	public void testParkingACar() {
+		when(inputReaderUtil.readSelection()).thenReturn(1);
 
-        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-        parkingService.processIncomingVehicle(actualDate);
+		ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+		parkingService.processIncomingVehicle(actualDate);
 
-        Ticket ticket = ticketDAO.getTicket("ABCDEF");
+		Ticket ticket = ticketDAO.getTicket("ABCDEF");
 
-        assertThat(ticket).isNotNull();
-        assertThat(ticket.getVehicleRegNumber()).isEqualTo("ABCDEF");
-        assertThat(ticket.getPrice()).isEqualTo(0);
-        assertThat(ticket.getParkingSpot().getParkingType()).isEqualTo(ParkingType.CAR);
-        assertThat(ticket.getInTime().toInstant()).isEqualTo(actualDate.toInstant());
-        assertThat(ticket.getOutTime()).isNull();
-        assertThat(ticket.getParkingSpot().isAvailable()).isFalse();
-    }
+		assertThat(ticket).isNotNull();
+		assertThat(ticket.getVehicleRegNumber()).isEqualTo("ABCDEF");
+		assertThat(ticket.getPrice()).isEqualTo(0);
+		assertThat(ticket.getParkingSpot().getParkingType()).isEqualTo(ParkingType.CAR);
+		assertThat(ticket.getInTime().toInstant()).isEqualTo(actualDate.toInstant());
+		assertThat(ticket.getOutTime()).isNull();
+		assertThat(ticket.getParkingSpot().isAvailable()).isFalse();
+	}
 
-    @Test
-    public void testParkingLotExit() {
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
-        Ticket ticket = new Ticket();
-        ticket.setVehicleRegNumber("ABCDEF");
-        ticket.setInTime(DateUtility.dateModifier(actualDate, TimeSlot.HOUR, -1));
-        ticket.setParkingSpot(parkingSpot);
-        parkingSpotDAO.updateParking(parkingSpot);
-        ticketDAO.saveTicket(ticket);
+	@Test
+	public void testParkingLotExit() {
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		Ticket ticket = new Ticket();
+		ticket.setVehicleRegNumber("ABCDEF");
+		ticket.setInTime(DateUtility.dateModifier(actualDate, TimeSlot.HOUR, -1));
+		ticket.setParkingSpot(parkingSpot);
+		parkingSpotDAO.updateParking(parkingSpot);
+		ticketDAO.saveTicket(ticket);
 
-        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-        parkingService.processExitingVehicle(actualDate);
+		ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+		parkingService.processExitingVehicle(actualDate);
 
-        Ticket updatedTicket = ticketDAO.getTicket("ABCDEF");
+		Ticket updatedTicket = ticketDAO.getTicket("ABCDEF");
 
-        assertThat(updatedTicket.getPrice()).isEqualTo(Fare.CAR_RATE_PER_HOUR);
-        assertThat(updatedTicket.getOutTime().toInstant()).isEqualTo(actualDate.toInstant());
-        assertThat(updatedTicket.getParkingSpot().isAvailable()).isTrue();
-    }
+		assertThat(updatedTicket.getPrice()).isEqualTo(Fare.CAR_RATE_PER_HOUR);
+		assertThat(updatedTicket.getOutTime().toInstant()).isEqualTo(actualDate.toInstant());
+		assertThat(updatedTicket.getParkingSpot().isAvailable()).isTrue();
+	}
 
-    /*
-        WARNING
-        Creating only 2 tickets requires the UserRecurrence.MIN_TICKET_COUNT
-        constant to be set to 2!
-        We need to :
-            (either) Create as many tickets as necessary to match the MIN_TICKET_COUNT (loop)
-            (or) Pass the MIN_TICKET_COUNT constant to ParkingService()
-                 so that it can be set to the desired number for testing purposes
-     */
-    // TODO: fix the problem mentioned in the comment above
-    @Test
-    public void testParkingLotExitRecurringUser() {
-        Ticket ticketOne = new Ticket();
-        ticketOne.setVehicleRegNumber("ABCDEF");
-        ticketOne.setParkingSpot(new ParkingSpot(1, ParkingType.CAR, true));
-        ticketOne.setInTime(DateUtility.dateModifier(actualDate, TimeSlot.HOUR, -3));
-        ticketOne.setOutTime(DateUtility.dateModifier(actualDate, TimeSlot.HOUR, -2));
-        ticketOne.setPrice(Fare.CAR_RATE_PER_HOUR);
-        ticketDAO.saveTicket(ticketOne);
+	@Test
+	public void testParkingLotExitRecurringUser() {
+		Ticket ticketOne = new Ticket();
+		ticketOne.setVehicleRegNumber("ABCDEF");
+		ticketOne.setParkingSpot(new ParkingSpot(1, ParkingType.CAR, true));
+		ticketOne.setInTime(DateUtility.dateModifier(actualDate, TimeSlot.HOUR, -3));
+		ticketOne.setOutTime(DateUtility.dateModifier(actualDate, TimeSlot.HOUR, -2));
+		ticketOne.setPrice(Fare.CAR_RATE_PER_HOUR);
+		ticketDAO.saveTicket(ticketOne);
 
-        Ticket ticketTwo = new Ticket();
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
-        ticketTwo.setVehicleRegNumber("ABCDEF");
-        ticketTwo.setParkingSpot(parkingSpot);
-        ticketTwo.setInTime(DateUtility.dateModifier(actualDate, TimeSlot.HOUR, -1));
-        parkingSpotDAO.updateParking(parkingSpot);
-        ticketDAO.saveTicket(ticketTwo);
+		Ticket ticketTwo = new Ticket();
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		ticketTwo.setVehicleRegNumber("ABCDEF");
+		ticketTwo.setParkingSpot(parkingSpot);
+		ticketTwo.setInTime(DateUtility.dateModifier(actualDate, TimeSlot.HOUR, -1));
+		parkingSpotDAO.updateParking(parkingSpot);
+		ticketDAO.saveTicket(ticketTwo);
 
+		ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 
+		parkingService.processExitingVehicle(actualDate);
 
-        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+		Ticket lastTicket = ticketDAO.getTicket("ABCDEF");
 
-        parkingService.processExitingVehicle(actualDate);
-
-        Ticket lastTicket = ticketDAO.getTicket("ABCDEF");
-
-        assertThat(lastTicket.getPrice()).isEqualTo(Fare.CAR_RATE_PER_HOUR * 0.95);
-        assertThat(lastTicket.getOutTime().toInstant()).isEqualTo(actualDate.toInstant());
-        assertThat(lastTicket.getParkingSpot().isAvailable()).isTrue();
-    }
+		assertThat(lastTicket.getPrice()).isEqualTo(Fare.CAR_RATE_PER_HOUR * 0.95);
+		assertThat(lastTicket.getOutTime().toInstant()).isEqualTo(actualDate.toInstant());
+		assertThat(lastTicket.getParkingSpot().isAvailable()).isTrue();
+	}
 }

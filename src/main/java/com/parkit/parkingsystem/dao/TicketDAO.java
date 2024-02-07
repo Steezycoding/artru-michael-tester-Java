@@ -14,12 +14,10 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 public class TicketDAO {
-
     private static final Logger logger = LogManager.getLogger("TicketDAO");
-
     public DataBaseConfig dataBaseConfig = new DataBaseConfig();
 
-    public boolean saveTicket(Ticket ticket){
+    public boolean saveTicket(Ticket ticket) {
         Connection con = null;
         try {
             con = dataBaseConfig.getConnection();
@@ -30,12 +28,13 @@ public class TicketDAO {
             ps.setTimestamp(4, new Timestamp(ticket.getInTime().getTime()));
             ps.setTimestamp(5, (ticket.getOutTime() == null)?null: (new Timestamp(ticket.getOutTime().getTime())) );
             return ps.execute();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             logger.error("Error fetching next available slot",ex);
-        }finally {
+        } finally {
             dataBaseConfig.closeConnection(con);
-            return false;
+
         }
+        return false;
     }
 
     public Ticket getTicket(String vehicleRegNumber) {
@@ -58,12 +57,12 @@ public class TicketDAO {
             }
             dataBaseConfig.closeResultSet(rs);
             dataBaseConfig.closePreparedStatement(ps);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             logger.error("Error fetching next available slot",ex);
-        }finally {
+        } finally {
             dataBaseConfig.closeConnection(con);
-            return ticket;
         }
+        return ticket;
     }
 
     public int getTicketsCount(String vehicleRegNumber) {
@@ -79,12 +78,12 @@ public class TicketDAO {
             }
             dataBaseConfig.closeResultSet(rs);
             dataBaseConfig.closePreparedStatement(ps);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             logger.error("Error checking user recurrence",ex);
-        }finally {
+        } finally {
             dataBaseConfig.closeConnection(con);
-            return linesCount;
         }
+        return linesCount;
     }
 
     public boolean updateTicket(Ticket ticket) {
@@ -97,9 +96,9 @@ public class TicketDAO {
             ps.setInt(3,ticket.getId());
             ps.execute();
             return true;
-        }catch (Exception ex){
+        } catch (Exception ex) {
             logger.error("Error saving ticket info",ex);
-        }finally {
+        } finally {
             dataBaseConfig.closeConnection(con);
         }
         return false;
