@@ -24,7 +24,7 @@ public class FareCalculatorService {
 		double time;
 		double price;
 
-		if (duration.toMinutes() <= 30) {
+		if (duration.toMinutes() < 30) {
 			time = 0;
 		} else {
 			time = (double) duration.toMinutes() / 60;
