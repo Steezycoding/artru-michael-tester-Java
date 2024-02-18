@@ -117,7 +117,7 @@ public class ParkingServiceTest {
 		}
 
 		@Test
-		public void getNextParkingNumberParkingNumberIfAvailable() {
+		public void shouldGetNextParkingNumberIfAvailable() {
 			when(inputReaderUtil.readSelection()).thenReturn(1);
 			when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);
 
@@ -130,7 +130,7 @@ public class ParkingServiceTest {
 		}
 
 		@Test
-		public void getNextParkingNumberParkingNumberNotFoundTest() {
+		public void shouldDoNothingIfParkingNumberNotFound() {
 			when(inputReaderUtil.readSelection()).thenReturn(1);
 			when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(0);
 
@@ -139,7 +139,7 @@ public class ParkingServiceTest {
 		}
 
 		@Test
-		public void getNextParkingNumberParkingNumberWrongArgumentTest() {
+		public void shouldDoNothingIfWrongArgumentPassedByUser() {
 			when(inputReaderUtil.readSelection()).thenReturn(ParkingType.values().length + 1);
 
 			assertNull(parkingService.getNextParkingNumberIfAvailable());
